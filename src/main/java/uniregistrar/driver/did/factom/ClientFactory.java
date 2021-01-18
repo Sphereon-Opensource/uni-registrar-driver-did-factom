@@ -17,7 +17,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_KEY;
+import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_MAINNET;
 import static uniregistrar.driver.did.factom.Constants.MAINNET_KEY;
+import static uniregistrar.driver.did.factom.Constants.SIGNING_MODE_KEY;
 
 public class ClientFactory {
     public enum Env {
@@ -58,11 +61,8 @@ public class ClientFactory {
             return Optional.empty();
         }
 
-        URL factomdUrl, walletdUrl;
-        try {
-            factomdUrl = new URL(environment.get(Env.FACTOMD_URL.key(nr)));
-            walletdUrl = new URL(environment.get(Env.WALLETD_URL.key(nr)));
-        } catch (MalformedURLException e){
+        String factomdUrl = environment.get(Env.FACTOMD_URL.key(nr));
+        if(StringUtils.isEmpty(factomdUrl)){
             return Optional.empty();
         }
 
@@ -71,17 +71,13 @@ public class ClientFactory {
             id = MAINNET_KEY;
         }
 
-        FactomdClientImpl factomdClient = (FactomdClientImpl) Networks.factomd(Optional.of(id));
-        factomdClient.setUrl(factomdUrl);
-
         String mode = environment.get(Env.MODE.key(nr));
-        WalletdClientImpl walletdClient = (WalletdClientImpl) Networks.walletd(Optional.of(id), Optional.of(SigningMode.fromModeString(mode)));
-        walletdClient.setUrl(walletdUrl);
-
-        Networks.register(factomdClient);
-        Networks.register(walletdClient);
-
-        return Optional.of(new IdentityClient.Builder().networkName(id).build());
+        Optional<IdentityClient> identityClient = Optional.of(new IdentityClient.Builder()
+                .networkName(id)
+                .property(id + '.' + FACTOMD_URL_KEY, factomdUrl)
+                .property(SIGNING_MODE_KEY, SigningMode.fromModeString(mode).toString())
+                .build());
+        return identityClient;
     }
 
     private Map<String, String> toMap(Properties properties) {

@@ -3,7 +3,9 @@ package uniregistrar.driver.did.factom;
 import org.blockchain_innovation.factom.client.api.SigningMode;
 import org.blockchain_innovation.factom.client.api.model.Address;
 import org.blockchain_innovation.factom.identiy.did.IdentityClient;
+import org.blockchain_innovation.factom.identiy.did.entry.ResolvedFactomDIDEntry;
 import org.blockchain_innovation.factom.identiy.did.request.CreateFactomDidRequest;
+import org.factomprotocol.identity.did.model.FactomDidContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uniregistrar.RegistrationException;
@@ -16,6 +18,7 @@ import uniregistrar.state.DeactivateState;
 import uniregistrar.state.RegisterState;
 import uniregistrar.state.UpdateState;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,9 +57,18 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         String networkId = getNetworkFrom(registerRequest).orElse(MAINNET_KEY);
         IdentityClient identityClient = getClient(networkId);
         CreateFactomDidRequest createRequest = FactomRegisterRequest.from(registerRequest).getCreateRequest();
-        identityClient.create(createRequest, getECAddressFor(networkId).orElseThrow(() ->
-                new RuntimeException("No EC address available for network id: " + networkId)));
-        return null;
+        try {
+            ResolvedFactomDIDEntry<FactomDidContent> result = identityClient.create(
+                    createRequest,
+                    getECAddressFor(networkId).orElseThrow(() ->
+                            new RegistrationException("No EC address available for network id: " + networkId)));
+            return RegisterState.build(result.getChainId(),
+                    null,
+                    null,
+                    Map.of("tags", Arrays.toString(createRequest.getTags())));
+        } catch (Exception e) {
+            throw new RegistrationException("Could not create new DID", e);
+        }
     }
 
     @Override
@@ -89,7 +101,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
     }
 
     private Optional<String> getNetworkFrom(RegisterRequest registerRequest) {
-        return Optional.of((String) registerRequest.getOptions().get("network"));
+        return Optional.of((String) registerRequest.getOptions().get("networkName"));
     }
 
     private Optional<Address> getECAddressFor(String networkId) {

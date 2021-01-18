@@ -21,10 +21,8 @@ ENV NODE2_FACTOMD_URL http://localhost:8088/v2
 # Additional nodes can be passed in using environment variables
 
 # done
-
-ADD ./settings.xml /root/.m2/
 ADD . /opt/driver-did-factom
-RUN cd /opt/driver-did-factom && mvn --settings settings.xml clean install package -N -DskipTests
+RUN cd /opt/driver-did-factom && mvn clean install package -N -DskipTests
 
 EXPOSE 9080
 

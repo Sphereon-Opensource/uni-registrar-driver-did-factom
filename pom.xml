@@ -17,6 +17,18 @@
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>2.3.3.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <profiles>
         <profile>
             <id>default</id>
@@ -26,48 +38,6 @@
             <properties>
                 <packaging.type>jar</packaging.type>
             </properties>
-        </profile>
-        <profile>
-            <id>war</id>
-            <properties>
-                <packaging.type>war</packaging.type>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-war-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-maven-plugin</artifactId>
-                        <configuration>
-                            <jettyConfig>
-                                ${basedir}/src/test/resources/jetty.xml
-                            </jettyConfig>
-                            <useTestClasspath>true</useTestClasspath>
-                            <systemProperties>
-                                <systemProperty>
-                                    <name>jetty.port</name>
-                                    <value>9080</value>
-                                </systemProperty>
-                                <systemProperty>
-                                    <name>log4j2.configurationFile</name>
-                                    <value>file:${basedir}/src/test/resources/log4j2-test.properties</value>
-                                </systemProperty>
-                            </systemProperties>
-                            <webApp>
-                                <contextPath>/</contextPath>
-                                <jettyEnvXml>
-                                    ${basedir}/src/test/resources/jetty-env.xml
-                                </jettyEnvXml>
-                                <webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
-                                <containerIncludeJarPattern>^$</containerIncludeJarPattern>
-                            </webApp>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 
@@ -112,11 +82,15 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
             <groupId>decentralized-identity</groupId>
             <artifactId>uni-registrar-driver</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.factomprotocol.identity</groupId>
+            <groupId>com.sphereon.public</groupId>
             <artifactId>factom-identity-client</artifactId>
             <version>0.3.0-SNAPSHOT</version>
         </dependency>
@@ -156,4 +130,12 @@
             <version>2.8.6</version>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

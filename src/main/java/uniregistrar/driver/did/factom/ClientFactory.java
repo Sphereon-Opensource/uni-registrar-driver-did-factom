@@ -3,13 +3,9 @@ package uniregistrar.driver.did.factom;
 
 import org.blockchain_innovation.factom.client.api.SigningMode;
 import org.blockchain_innovation.factom.client.api.ops.StringUtils;
-import org.blockchain_innovation.factom.client.impl.FactomdClientImpl;
-import org.blockchain_innovation.factom.client.impl.Networks;
-import org.blockchain_innovation.factom.client.impl.WalletdClientImpl;
-import org.blockchain_innovation.factom.identiy.did.IdentityClient;
+import org.blockchain_innovation.factom.client.api.settings.RpcSettings;
+import com.sphereon.factom.identity.did.IdentityClient;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,10 +13,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_KEY;
+import static uniregistrar.driver.did.factom.Constants.URL_KEY;
 import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_MAINNET;
+import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_TESTNET;
 import static uniregistrar.driver.did.factom.Constants.MAINNET_KEY;
 import static uniregistrar.driver.did.factom.Constants.SIGNING_MODE_KEY;
+import static uniregistrar.driver.did.factom.Constants.TESTNET_KEY;
 
 public class ClientFactory {
     public enum Env {
@@ -50,6 +48,23 @@ public class ClientFactory {
         return clients;
     }
 
+    public List<IdentityClient> fromDefaults() {
+        List<IdentityClient> clients = new ArrayList<>();
+        clients.add(new IdentityClient.Builder().networkName(MAINNET_KEY)
+                .property(constructPropertyKey(MAINNET_KEY, RpcSettings.SubSystem.FACTOMD, URL_KEY),
+                        FACTOMD_URL_MAINNET)
+                .property(constructPropertyKey(MAINNET_KEY, RpcSettings.SubSystem.WALLETD, SIGNING_MODE_KEY),
+                        SigningMode.OFFLINE.toString().toLowerCase())
+                .build());
+        clients.add(new IdentityClient.Builder().networkName(TESTNET_KEY)
+                .property(constructPropertyKey(TESTNET_KEY, RpcSettings.SubSystem.FACTOMD, URL_KEY),
+                        FACTOMD_URL_TESTNET)
+                .property(constructPropertyKey(TESTNET_KEY, RpcSettings.SubSystem.WALLETD, SIGNING_MODE_KEY),
+                        SigningMode.OFFLINE.toString().toLowerCase())
+                .build());
+        return clients;
+    }
+
     public Optional<IdentityClient> fromEnvironment(Properties properties, int nr) {
         return fromEnvironment(toMap(properties), nr);
     }
@@ -62,7 +77,7 @@ public class ClientFactory {
         }
 
         String factomdUrl = environment.get(Env.FACTOMD_URL.key(nr));
-        if(StringUtils.isEmpty(factomdUrl)){
+        if (StringUtils.isEmpty(factomdUrl)) {
             return Optional.empty();
         }
 
@@ -72,17 +87,20 @@ public class ClientFactory {
         }
 
         String mode = environment.get(Env.MODE.key(nr));
-        Optional<IdentityClient> identityClient = Optional.of(new IdentityClient.Builder()
+        return Optional.of(new IdentityClient.Builder()
                 .networkName(id)
-                .property(id + '.' + FACTOMD_URL_KEY, factomdUrl)
-                .property(SIGNING_MODE_KEY, SigningMode.fromModeString(mode).toString())
+                .property(constructPropertyKey(id, RpcSettings.SubSystem.FACTOMD, URL_KEY), factomdUrl)
+                .property(constructPropertyKey(id, RpcSettings.SubSystem.WALLETD, SIGNING_MODE_KEY), SigningMode.fromModeString(mode).toString())
                 .build());
-        return identityClient;
     }
 
     private Map<String, String> toMap(Properties properties) {
         Map<String, String> map = new HashMap<>();
         properties.forEach((key, value) -> map.put((String) key, (String) value));
         return map;
+    }
+
+    private String constructPropertyKey(String networkId, RpcSettings.SubSystem subsystem, String key) {
+        return String.format("%s.%s.%s", networkId, subsystem.configKey(), key);
     }
 }

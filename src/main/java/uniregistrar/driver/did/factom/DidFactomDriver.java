@@ -1,13 +1,13 @@
 package uniregistrar.driver.did.factom;
 
-import org.blockchain_innovation.factom.client.api.SigningMode;
+import com.sphereon.factom.identity.did.IdentityClient;
+import com.sphereon.factom.identity.did.entry.ResolvedFactomDIDEntry;
+import com.sphereon.factom.identity.did.request.CreateFactomDidRequest;
 import org.blockchain_innovation.factom.client.api.model.Address;
-import org.blockchain_innovation.factom.identiy.did.IdentityClient;
-import org.blockchain_innovation.factom.identiy.did.entry.ResolvedFactomDIDEntry;
-import org.blockchain_innovation.factom.identiy.did.request.CreateFactomDidRequest;
 import org.factomprotocol.identity.did.model.FactomDidContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import uniregistrar.RegistrationException;
 import uniregistrar.driver.AbstractDriver;
 import uniregistrar.driver.Driver;
@@ -25,28 +25,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_KEY;
-import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_MAINNET;
-import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_TESTNET;
 import static uniregistrar.driver.did.factom.Constants.MAINNET_KEY;
-import static uniregistrar.driver.did.factom.Constants.SIGNING_MODE_KEY;
-import static uniregistrar.driver.did.factom.Constants.TESTNET_KEY;
 
+@Component
 public class DidFactomDriver extends AbstractDriver implements Driver {
     private static Logger log = LoggerFactory.getLogger(DidFactomDriver.class);
 
-    public DidFactomDriver() throws RegistrationException {
+    public DidFactomDriver() {
         ClientFactory clientFactory = new ClientFactory();
         List<IdentityClient> clients = clientFactory.fromEnvironment(getProperties());
         if (clients.isEmpty()) {
             log.warn("No Factom networks defined in environment. Using default mainnet and testnet values using OpenNode");
-            clients.add(new IdentityClient.Builder().networkName(MAINNET_KEY)
-                    .property(FACTOMD_URL_KEY, FACTOMD_URL_MAINNET)
-                    .property(SIGNING_MODE_KEY, SigningMode.OFFLINE.toString().toLowerCase())
-                    .build());
-            clients.add(new IdentityClient.Builder().networkName(TESTNET_KEY)
-                    .property(SIGNING_MODE_KEY, SigningMode.OFFLINE.toString().toLowerCase())
-                    .property(FACTOMD_URL_KEY, FACTOMD_URL_TESTNET).build());
+            clients = clientFactory.fromDefaults();
         }
         clients.forEach(IdentityClient.Registry::put);
     }

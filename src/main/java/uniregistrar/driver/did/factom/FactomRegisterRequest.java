@@ -1,7 +1,7 @@
 package uniregistrar.driver.did.factom;
 
 import com.google.gson.Gson;
-import org.blockchain_innovation.factom.identiy.did.request.CreateFactomDidRequest;
+import com.sphereon.factom.identity.did.request.CreateFactomDidRequest;
 import uniregistrar.request.RegisterRequest;
 
 public class FactomRegisterRequest {

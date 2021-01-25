@@ -8,5 +8,11 @@ public interface Constants {
     String MAINNET_KEY = "mainnet";
     String TESTNET_KEY = "testnet";
     String SIGNING_MODE_KEY = "signing-mode";
+    String EC_ADDRESS_KEY = "ec-address";
 
+    class DidState{
+        public static final String PENDING = "pending";
+        public static final String FINISHED = "finished";
+        public static final String NOT_FOUND = "not found";
+    }
 }

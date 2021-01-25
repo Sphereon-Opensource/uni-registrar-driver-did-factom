@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import static uniregistrar.driver.did.factom.Constants.EC_ADDRESS_KEY;
 import static uniregistrar.driver.did.factom.Constants.URL_KEY;
 import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_MAINNET;
 import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_TESTNET;
@@ -86,12 +87,20 @@ public class ClientFactory {
             id = MAINNET_KEY;
         }
 
+        String esAddress = environment.get(Env.ES_ADDRESS.key(nr));
+
         String mode = environment.get(Env.MODE.key(nr));
-        return Optional.of(new IdentityClient.Builder()
+        IdentityClient.Builder clientBuilder = new IdentityClient.Builder()
                 .networkName(id)
                 .property(constructPropertyKey(id, RpcSettings.SubSystem.FACTOMD, URL_KEY), factomdUrl)
-                .property(constructPropertyKey(id, RpcSettings.SubSystem.WALLETD, SIGNING_MODE_KEY), SigningMode.fromModeString(mode).toString())
-                .build());
+                .property(constructPropertyKey(id, RpcSettings.SubSystem.WALLETD, SIGNING_MODE_KEY),
+                        SigningMode.fromModeString(mode).toString());
+
+        if (StringUtils.isNotEmpty(esAddress)) {
+            clientBuilder.property(constructPropertyKey(id, RpcSettings.SubSystem.WALLETD, EC_ADDRESS_KEY), esAddress);
+        }
+
+        return Optional.of(clientBuilder.build());
     }
 
     private Map<String, String> toMap(Properties properties) {

@@ -17,7 +17,6 @@ import org.blockchain_innovation.factom.client.api.ops.EntryOperations;
 import org.blockchain_innovation.factom.client.api.ops.StringUtils;
 import org.blockchain_innovation.factom.client.impl.Networks;
 import org.factomprotocol.identity.did.model.FactomDidContent;
-import org.factomprotocol.identity.did.model.IdentityEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

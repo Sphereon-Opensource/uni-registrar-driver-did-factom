@@ -1,10 +1,10 @@
 package uniregistrar.driver.did.factom;
 
 
+import com.sphereon.factom.identity.did.IdentityClient;
 import org.blockchain_innovation.factom.client.api.SigningMode;
 import org.blockchain_innovation.factom.client.api.ops.StringUtils;
 import org.blockchain_innovation.factom.client.api.settings.RpcSettings;
-import com.sphereon.factom.identity.did.IdentityClient;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,12 +14,12 @@ import java.util.Optional;
 import java.util.Properties;
 
 import static uniregistrar.driver.did.factom.Constants.EC_ADDRESS_KEY;
-import static uniregistrar.driver.did.factom.Constants.URL_KEY;
 import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_MAINNET;
 import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_TESTNET;
 import static uniregistrar.driver.did.factom.Constants.MAINNET_KEY;
 import static uniregistrar.driver.did.factom.Constants.SIGNING_MODE_KEY;
 import static uniregistrar.driver.did.factom.Constants.TESTNET_KEY;
+import static uniregistrar.driver.did.factom.Constants.URL_KEY;
 
 public class ClientFactory {
     public enum Env {

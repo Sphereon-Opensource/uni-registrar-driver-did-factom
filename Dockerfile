@@ -6,8 +6,8 @@ MAINTAINER Sphereon Dev <dev@sphereon.com>
 # Default testnet node using Factom OpenNode
 ENV NODE1_ENABLED true
 ENV NODE1_NETWORK_ID testnet
-ENV NODE1_FACTOMD_URL http://ams-test01.blockchain-innovation.org:8088/v2
-ENV NODE1_ES_ADDRESS Es3Y6U6H1Pfg4wYag8VMtRZEGuEJnfkJ2ZuSyCVcQKweB6y4WvGH
+ENV NODE1_FACTOMD_URL https://a26cc2717826.ngrok.io/v2
+ENV NODE1_ES_ADDRESS Es4JHJ7T2E34j2Xqg84jWZRvgJ1cBtZZMseL2GxaEwJ7PigV23dh
 
 #
 # Additional nodes can be passed in using environment variables

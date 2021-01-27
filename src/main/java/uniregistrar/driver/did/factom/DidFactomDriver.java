@@ -1,7 +1,9 @@
 package uniregistrar.driver.did.factom;
 
 import com.google.gson.Gson;
+import com.sphereon.factom.identity.did.DIDVersion;
 import com.sphereon.factom.identity.did.IdentityClient;
+import com.sphereon.factom.identity.did.entry.CreateIdentityRequestEntry;
 import com.sphereon.factom.identity.did.entry.ResolvedFactomDIDEntry;
 import com.sphereon.factom.identity.did.request.CreateFactomDidRequest;
 import org.blockchain_innovation.factom.client.api.FactomResponse;
@@ -15,6 +17,7 @@ import org.blockchain_innovation.factom.client.api.ops.EntryOperations;
 import org.blockchain_innovation.factom.client.api.ops.StringUtils;
 import org.blockchain_innovation.factom.client.impl.Networks;
 import org.factomprotocol.identity.did.model.FactomDidContent;
+import org.factomprotocol.identity.did.model.IdentityEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -60,33 +63,25 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
     @Override
     public RegisterState register(RegisterRequest registerRequest) throws RegistrationException {
         if (StringUtils.isNotEmpty(registerRequest.getJobId())) {
-            JobMetadata jobMetadata = JobMetadata.from(registerRequest.getJobId());
-            FactomdClient factomdClient = getFactomdFor(jobMetadata.getNetwork());
-            final FactomResponse<EntryTransactionResponse> response;
-            try {
-                response = factomdClient.ackEntryTransactions(jobMetadata.getEntryHash()).get();
-            } catch (ExecutionException | InterruptedException e) {
-                throw new RegistrationException("Could not check job status for jobId: " + registerRequest.getJobId(), e);
-            }
-            Map<String, Object> didState = new HashMap<>();
-            didState.put("state", entryStateFromResponse(response));
-            didState.put("identifier", constructDidUri(jobMetadata.getNetwork(), jobMetadata.getChainId()));
-            return RegisterState.build(
-                    registerRequest.getJobId(),
-                    didState,
-                    null,
-                    null);
+            return handleJobStatusResponse(registerRequest.getJobId());
         }
 
         String networkId = getNetworkFrom(registerRequest).orElse(MAINNET_KEY);
         IdentityClient identityClient = getClient(networkId);
+        DIDVersion didVersion = getDidVersionFrom(registerRequest).orElse(DIDVersion.FACTOM_V1_JSON);
+        Address ecAddress = getECAddressFor(networkId).orElseThrow(() ->
+                new RegistrationException("No EC address available for network id: " + networkId));
+
+        if (DIDVersion.FACTOM_IDENTITY_CHAIN.equals(didVersion)) {
+            // ToDo: finish create(CreateIdentityRequestEntry entry, Optional<Address> ecAddress) method
+            // in IdentityClient
+            throw new RegistrationException("Factom Identity Chain DID creation is not yet implemented.");
+        }
+
         CreateFactomDidRequest createRequest = createFactomDidRequestFrom(registerRequest);
         final ResolvedFactomDIDEntry<FactomDidContent> result;
         try {
-            result = identityClient.create(
-                    createRequest,
-                    getECAddressFor(networkId).orElseThrow(() ->
-                            new RegistrationException("No EC address available for network id: " + networkId)));
+            result = identityClient.create(createRequest, ecAddress);
         } catch (FactomRuntimeException e) {
             throw new RegistrationException(e.getMessage(), e);
         } catch (Exception e) {
@@ -136,6 +131,14 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         return Optional.of((String) registerRequest.getOptions().get("networkName"));
     }
 
+    private Optional<DIDVersion> getDidVersionFrom(RegisterRequest registerRequest) {
+        String versionString = (String) registerRequest.getOptions().get("didVersion");
+        if (versionString == null) {
+            return Optional.empty();
+        }
+        return Optional.of(DIDVersion.valueOf(versionString));
+    }
+
     private Optional<Address> getECAddressFor(String networkId) {
         for (int nr = 1; nr < 10; nr++) {
             String nrNetworkId = getProperties().get(ClientFactory.Env.NETWORK_ID.key(nr));
@@ -154,6 +157,25 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
                         didEntry.getContent(),
                         didEntry.getChainId())
         );
+    }
+
+    private RegisterState handleJobStatusResponse(String jobId) throws RegistrationException {
+        JobMetadata jobMetadata = JobMetadata.from(jobId);
+        FactomdClient factomdClient = getFactomdFor(jobMetadata.getNetwork());
+        final FactomResponse<EntryTransactionResponse> response;
+        try {
+            response = factomdClient.ackEntryTransactions(jobMetadata.getEntryHash()).get();
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RegistrationException("Could not check job status for jobId: " + jobId, e);
+        }
+        Map<String, Object> didState = new HashMap<>();
+        didState.put("state", entryStateFromResponse(response));
+        didState.put("identifier", constructDidUri(jobMetadata.getNetwork(), jobMetadata.getChainId()));
+        return RegisterState.build(
+                jobId,
+                didState,
+                null,
+                null);
     }
 
     private String entryStateFromResponse(FactomResponse<EntryTransactionResponse> response) {
@@ -185,5 +207,9 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
 
     private CreateFactomDidRequest createFactomDidRequestFrom(RegisterRequest registerRequest) {
         return gson.fromJson(gson.toJsonTree(registerRequest.getOptions()), CreateFactomDidRequest.class);
+    }
+
+    private CreateIdentityRequestEntry createIdentityRequestEntryFrom(RegisterRequest registerRequest) {
+        return gson.fromJson(gson.toJsonTree(registerRequest.getOptions()), CreateIdentityRequestEntry.class);
     }
 }

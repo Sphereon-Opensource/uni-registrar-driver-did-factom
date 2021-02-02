@@ -1,4 +1,4 @@
-package uniregistrar.driver.did.factom;
+package com.sphereon.uniregistrar.driver.did.factom;
 
 
 import com.sphereon.factom.identity.did.IdentityClient;
@@ -12,14 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-
-import static uniregistrar.driver.did.factom.Constants.EC_ADDRESS_KEY;
-import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_MAINNET;
-import static uniregistrar.driver.did.factom.Constants.FACTOMD_URL_TESTNET;
-import static uniregistrar.driver.did.factom.Constants.MAINNET_KEY;
-import static uniregistrar.driver.did.factom.Constants.SIGNING_MODE_KEY;
-import static uniregistrar.driver.did.factom.Constants.TESTNET_KEY;
-import static uniregistrar.driver.did.factom.Constants.URL_KEY;
 
 public class ClientFactory {
     public enum Env {
@@ -51,16 +43,16 @@ public class ClientFactory {
 
     public List<IdentityClient> fromDefaults() {
         List<IdentityClient> clients = new ArrayList<>();
-        clients.add(new IdentityClient.Builder().networkName(MAINNET_KEY)
-                .property(constructPropertyKey(MAINNET_KEY, RpcSettings.SubSystem.FACTOMD, URL_KEY),
-                        FACTOMD_URL_MAINNET)
-                .property(constructPropertyKey(MAINNET_KEY, RpcSettings.SubSystem.WALLETD, SIGNING_MODE_KEY),
+        clients.add(new IdentityClient.Builder().networkName(Constants.MAINNET_KEY)
+                .property(constructPropertyKey(Constants.MAINNET_KEY, RpcSettings.SubSystem.FACTOMD, Constants.URL_KEY),
+                        Constants.FACTOMD_URL_MAINNET)
+                .property(constructPropertyKey(Constants.MAINNET_KEY, RpcSettings.SubSystem.WALLETD, Constants.SIGNING_MODE_KEY),
                         SigningMode.OFFLINE.toString().toLowerCase())
                 .build());
-        clients.add(new IdentityClient.Builder().networkName(TESTNET_KEY)
-                .property(constructPropertyKey(TESTNET_KEY, RpcSettings.SubSystem.FACTOMD, URL_KEY),
-                        FACTOMD_URL_TESTNET)
-                .property(constructPropertyKey(TESTNET_KEY, RpcSettings.SubSystem.WALLETD, SIGNING_MODE_KEY),
+        clients.add(new IdentityClient.Builder().networkName(Constants.TESTNET_KEY)
+                .property(constructPropertyKey(Constants.TESTNET_KEY, RpcSettings.SubSystem.FACTOMD, Constants.URL_KEY),
+                        Constants.FACTOMD_URL_TESTNET)
+                .property(constructPropertyKey(Constants.TESTNET_KEY, RpcSettings.SubSystem.WALLETD, Constants.SIGNING_MODE_KEY),
                         SigningMode.OFFLINE.toString().toLowerCase())
                 .build());
         return clients;
@@ -84,7 +76,7 @@ public class ClientFactory {
 
         String id = environment.get(Env.NETWORK_ID.key(nr));
         if (StringUtils.isEmpty(id)) {
-            id = MAINNET_KEY;
+            id = Constants.MAINNET_KEY;
         }
 
         String ecAddress = environment.get(Env.EC_ADDRESS.key(nr));
@@ -92,12 +84,12 @@ public class ClientFactory {
         String mode = environment.get(Env.MODE.key(nr));
         IdentityClient.Builder clientBuilder = new IdentityClient.Builder()
                 .networkName(id)
-                .property(constructPropertyKey(id, RpcSettings.SubSystem.FACTOMD, URL_KEY), factomdUrl)
-                .property(constructPropertyKey(id, RpcSettings.SubSystem.WALLETD, SIGNING_MODE_KEY),
+                .property(constructPropertyKey(id, RpcSettings.SubSystem.FACTOMD, Constants.URL_KEY), factomdUrl)
+                .property(constructPropertyKey(id, RpcSettings.SubSystem.WALLETD, Constants.SIGNING_MODE_KEY),
                         SigningMode.fromModeString(mode).toString());
 
         if (StringUtils.isNotEmpty(ecAddress)) {
-            clientBuilder.property(constructPropertyKey(id, RpcSettings.SubSystem.WALLETD, EC_ADDRESS_KEY), ecAddress);
+            clientBuilder.property(constructPropertyKey(id, RpcSettings.SubSystem.WALLETD, Constants.EC_ADDRESS_KEY), ecAddress);
         }
 
         return Optional.of(clientBuilder.build());

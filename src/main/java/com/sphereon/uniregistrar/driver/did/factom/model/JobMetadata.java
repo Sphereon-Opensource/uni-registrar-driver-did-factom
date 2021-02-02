@@ -1,4 +1,4 @@
-package uniregistrar.driver.did.factom.model;
+package com.sphereon.uniregistrar.driver.did.factom.model;
 
 import java.util.regex.Pattern;
 

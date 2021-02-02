@@ -1,4 +1,4 @@
-package uniregistrar.driver.did.factom;
+package com.sphereon.uniregistrar.driver.did.factom;
 
 public interface Constants {
     String URL_KEY = "url";

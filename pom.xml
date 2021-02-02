@@ -175,7 +175,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>uniregistrar.driver.did.factom.FactomDriverApplication</mainClass>
+                    <mainClass>com.sphereon.uniregistrar.driver.did.factom.FactomDriverApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

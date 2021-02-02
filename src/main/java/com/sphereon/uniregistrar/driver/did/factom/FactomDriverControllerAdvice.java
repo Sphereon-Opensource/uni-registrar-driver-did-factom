@@ -1,4 +1,4 @@
-package uniregistrar.driver.did.factom;
+package com.sphereon.uniregistrar.driver.did.factom;
 
 import com.sphereon.ms.rest.response.error.ErrorResponse;
 import org.slf4j.Logger;

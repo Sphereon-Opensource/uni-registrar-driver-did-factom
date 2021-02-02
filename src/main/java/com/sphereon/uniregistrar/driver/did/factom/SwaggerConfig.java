@@ -1,4 +1,4 @@
-package uniregistrar.driver.did.factom;
+package com.sphereon.uniregistrar.driver.did.factom;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -7,7 +7,7 @@ import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
-import uniregistrar.driver.did.factom.dto.FactomRegisterRequest;
+import com.sphereon.uniregistrar.driver.did.factom.dto.FactomRegisterRequest;
 import uniregistrar.request.RegisterRequest;
 
 @Configuration

@@ -1,4 +1,4 @@
-package uniregistrar.driver.did.factom.dto;
+package com.sphereon.uniregistrar.driver.did.factom.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

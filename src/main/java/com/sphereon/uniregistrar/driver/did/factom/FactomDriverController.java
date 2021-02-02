@@ -1,4 +1,4 @@
-package uniregistrar.driver.did.factom;
+package com.sphereon.uniregistrar.driver.did.factom;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

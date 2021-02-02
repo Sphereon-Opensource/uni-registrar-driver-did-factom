@@ -1,4 +1,4 @@
-package uniregistrar.driver.did.factom;
+package com.sphereon.uniregistrar.driver.did.factom;
 
 import com.google.gson.Gson;
 import com.sphereon.factom.identity.did.DIDVersion;
@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 import uniregistrar.RegistrationException;
 import uniregistrar.driver.AbstractDriver;
 import uniregistrar.driver.Driver;
-import uniregistrar.driver.did.factom.model.JobMetadata;
+import com.sphereon.uniregistrar.driver.did.factom.model.JobMetadata;
 import uniregistrar.request.DeactivateRequest;
 import uniregistrar.request.RegisterRequest;
 import uniregistrar.request.UpdateRequest;
@@ -38,7 +38,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import static uniregistrar.driver.did.factom.Constants.MAINNET_KEY;
+import static com.sphereon.uniregistrar.driver.did.factom.Constants.MAINNET_KEY;
 
 @Component
 public class DidFactomDriver extends AbstractDriver implements Driver {

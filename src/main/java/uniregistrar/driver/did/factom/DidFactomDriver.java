@@ -191,7 +191,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
     }
 
     private String constructDidUri(String network, String chainId) {
-        if (MAINNET_KEY.equals(network)) {
+        if (network == null || MAINNET_KEY.equals(network)) {
             return String.format("did:factom:%s", chainId);
         }
         return String.format("did:factom:%s:%s", network, chainId);

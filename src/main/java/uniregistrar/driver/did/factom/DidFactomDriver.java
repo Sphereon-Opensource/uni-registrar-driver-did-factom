@@ -65,7 +65,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
             return handleJobStatusResponse(registerRequest.getJobId());
         }
 
-        String networkId = getNetworkFrom(registerRequest).orElse(MAINNET_KEY);
+        String networkId = getNetworkFrom(registerRequest);
         IdentityClient identityClient = getClient(networkId);
         DIDVersion didVersion = getDidVersionFrom(registerRequest).orElse(DIDVersion.FACTOM_V1_JSON);
         Address ecAddress = getECAddressFor(networkId).orElseThrow(() ->
@@ -126,8 +126,8 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         return identityClient;
     }
 
-    private Optional<String> getNetworkFrom(RegisterRequest registerRequest) {
-        return Optional.of((String) registerRequest.getOptions().get("networkName"));
+    private String getNetworkFrom(RegisterRequest registerRequest) {
+        return Optional.of((String) registerRequest.getOptions().get("networkName")).orElse(MAINNET_KEY);
     }
 
     private Optional<DIDVersion> getDidVersionFrom(RegisterRequest registerRequest) {

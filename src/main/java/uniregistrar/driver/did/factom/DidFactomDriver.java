@@ -73,7 +73,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
 
         if (DIDVersion.FACTOM_IDENTITY_CHAIN.equals(didVersion)) {
             // ToDo: finish create(CreateIdentityRequestEntry entry, Optional<Address> ecAddress) method
-            // in IdentityClient
+            // in IdentityClient for backwards compatibility with Factom Identity Chains
             throw new RegistrationException("Factom Identity Chain DID creation is not yet implemented.");
         }
 
@@ -142,7 +142,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         for (int nr = 1; nr < 10; nr++) {
             String nrNetworkId = getProperties().get(ClientFactory.Env.NETWORK_ID.key(nr));
             if (nrNetworkId.equals(networkId)) {
-                return Optional.of(new Address(getProperties().get(ClientFactory.Env.ES_ADDRESS.key(nr))));
+                return Optional.of(new Address(getProperties().get(ClientFactory.Env.EC_ADDRESS.key(nr))));
             }
         }
         return Optional.empty();

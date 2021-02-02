@@ -23,7 +23,7 @@ import static uniregistrar.driver.did.factom.Constants.URL_KEY;
 
 public class ClientFactory {
     public enum Env {
-        ENABLED, FACTOMD_URL, WALLETD_URL, NETWORK_ID, MODE, ES_ADDRESS;
+        ENABLED, FACTOMD_URL, WALLETD_URL, NETWORK_ID, MODE, EC_ADDRESS;
 
         public String key(int id) {
             if (id < 1 || id > 9) {
@@ -87,7 +87,7 @@ public class ClientFactory {
             id = MAINNET_KEY;
         }
 
-        String esAddress = environment.get(Env.ES_ADDRESS.key(nr));
+        String ecAddress = environment.get(Env.EC_ADDRESS.key(nr));
 
         String mode = environment.get(Env.MODE.key(nr));
         IdentityClient.Builder clientBuilder = new IdentityClient.Builder()
@@ -96,8 +96,8 @@ public class ClientFactory {
                 .property(constructPropertyKey(id, RpcSettings.SubSystem.WALLETD, SIGNING_MODE_KEY),
                         SigningMode.fromModeString(mode).toString());
 
-        if (StringUtils.isNotEmpty(esAddress)) {
-            clientBuilder.property(constructPropertyKey(id, RpcSettings.SubSystem.WALLETD, EC_ADDRESS_KEY), esAddress);
+        if (StringUtils.isNotEmpty(ecAddress)) {
+            clientBuilder.property(constructPropertyKey(id, RpcSettings.SubSystem.WALLETD, EC_ADDRESS_KEY), ecAddress);
         }
 
         return Optional.of(clientBuilder.build());

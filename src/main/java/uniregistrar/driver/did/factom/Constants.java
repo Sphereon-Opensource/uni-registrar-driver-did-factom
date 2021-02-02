@@ -21,7 +21,7 @@ public interface Constants {
 
     class DidState{
         public static final String PENDING = "pending";
-        public static final String FINISHED = "finished";
+        public static final String ANCHORED = "anchored";
         public static final String NOT_FOUND = "not found";
     }
 }

@@ -183,7 +183,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
             case TransactionACK:
                 return Constants.DidState.PENDING;
             case DBlockConfirmed:
-                return Constants.DidState.FINISHED;
+                return Constants.DidState.ANCHORED;
             case Unknown:
             default:
                 return Constants.DidState.NOT_FOUND;

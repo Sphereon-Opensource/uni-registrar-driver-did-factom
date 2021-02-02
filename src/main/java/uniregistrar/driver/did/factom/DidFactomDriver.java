@@ -67,7 +67,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
 
         String networkId = getNetworkFrom(registerRequest);
         IdentityClient identityClient = getClient(networkId);
-        DIDVersion didVersion = getDidVersionFrom(registerRequest).orElse(DIDVersion.FACTOM_V1_JSON);
+        DIDVersion didVersion = getDidVersionFrom(registerRequest);
         Address ecAddress = getECAddressFor(networkId).orElseThrow(() ->
                 new RegistrationException("No EC address available for network id: " + networkId));
 
@@ -130,12 +130,12 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         return Optional.of((String) registerRequest.getOptions().get("networkName")).orElse(MAINNET_KEY);
     }
 
-    private Optional<DIDVersion> getDidVersionFrom(RegisterRequest registerRequest) {
+    private DIDVersion getDidVersionFrom(RegisterRequest registerRequest) {
         String versionString = (String) registerRequest.getOptions().get("didVersion");
         if (versionString == null) {
-            return Optional.empty();
+            return DIDVersion.FACTOM_V1_JSON;
         }
-        return Optional.of(DIDVersion.valueOf(versionString));
+        return DIDVersion.valueOf(versionString);
     }
 
     private Optional<Address> getECAddressFor(String networkId) {

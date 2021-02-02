@@ -9,6 +9,16 @@ public interface Constants {
     String SIGNING_MODE_KEY = "signing-mode";
     String EC_ADDRESS_KEY = "ec-address";
 
+    class RequestOptions {
+        public static final String NETWORK_NAME = "networkName";
+        public static final String DID_VERSION = "didVersion";
+    }
+
+    class ResponseKeywords {
+        public static final String IDENTIFIER = "identifier";
+        public static final String STATE = "state";
+    }
+
     class DidState{
         public static final String PENDING = "pending";
         public static final String FINISHED = "finished";

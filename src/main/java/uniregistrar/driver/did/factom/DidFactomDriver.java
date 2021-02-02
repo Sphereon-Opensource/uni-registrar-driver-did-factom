@@ -88,8 +88,8 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         }
         String jobId = new JobMetadata(networkId, result.getChainId(), getEntryHash(result)).getId();
         Map<String, Object> didState = new HashMap<>();
-        didState.put("state", Constants.DidState.PENDING);
-        didState.put("identifier", constructDidUri(networkId, result.getChainId()));
+        didState.put(Constants.ResponseKeywords.STATE, Constants.DidState.PENDING);
+        didState.put(Constants.ResponseKeywords.IDENTIFIER, constructDidUri(networkId, result.getChainId()));
         return RegisterState.build(
                 jobId,
                 didState,
@@ -127,11 +127,11 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
     }
 
     private String getNetworkFrom(RegisterRequest registerRequest) {
-        return Optional.of((String) registerRequest.getOptions().get("networkName")).orElse(MAINNET_KEY);
+        return Optional.of((String) registerRequest.getOptions().get(Constants.RequestOptions.NETWORK_NAME)).orElse(MAINNET_KEY);
     }
 
     private DIDVersion getDidVersionFrom(RegisterRequest registerRequest) {
-        String versionString = (String) registerRequest.getOptions().get("didVersion");
+        String versionString = (String) registerRequest.getOptions().get(Constants.RequestOptions.DID_VERSION);
         if (versionString == null) {
             return DIDVersion.FACTOM_V1_JSON;
         }

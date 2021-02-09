@@ -6,6 +6,7 @@ import com.sphereon.factom.identity.did.IdentityClient;
 import com.sphereon.factom.identity.did.entry.CreateIdentityRequestEntry;
 import com.sphereon.factom.identity.did.entry.ResolvedFactomDIDEntry;
 import com.sphereon.factom.identity.did.request.CreateFactomDidRequest;
+import com.sphereon.uniregistrar.driver.did.factom.model.JobMetadata;
 import org.blockchain_innovation.factom.client.api.FactomResponse;
 import org.blockchain_innovation.factom.client.api.FactomdClient;
 import org.blockchain_innovation.factom.client.api.errors.FactomRuntimeException;
@@ -23,12 +24,11 @@ import org.springframework.stereotype.Component;
 import uniregistrar.RegistrationException;
 import uniregistrar.driver.AbstractDriver;
 import uniregistrar.driver.Driver;
-import com.sphereon.uniregistrar.driver.did.factom.model.JobMetadata;
+import uniregistrar.request.CreateRequest;
 import uniregistrar.request.DeactivateRequest;
-import uniregistrar.request.RegisterRequest;
 import uniregistrar.request.UpdateRequest;
+import uniregistrar.state.CreateState;
 import uniregistrar.state.DeactivateState;
-import uniregistrar.state.RegisterState;
 import uniregistrar.state.UpdateState;
 
 import java.util.HashMap;
@@ -60,14 +60,14 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
 
 
     @Override
-    public RegisterState register(RegisterRequest registerRequest) throws RegistrationException {
-        if (StringUtils.isNotEmpty(registerRequest.getJobId())) {
-            return handleJobStatusResponse(registerRequest.getJobId());
+    public CreateState create(CreateRequest createRequest) throws RegistrationException {
+        if (StringUtils.isNotEmpty(createRequest.getJobId())) {
+            return handleJobStatusResponse(createRequest.getJobId());
         }
 
-        String networkId = getNetworkFrom(registerRequest);
+        String networkId = getNetworkFrom(createRequest);
         IdentityClient identityClient = getClient(networkId);
-        DIDVersion didVersion = getDidVersionFrom(registerRequest);
+        DIDVersion didVersion = getDidVersionFrom(createRequest);
         Address ecAddress = getECAddressFor(networkId).orElseThrow(() ->
                 new RegistrationException("No EC address available for network id: " + networkId));
 
@@ -77,10 +77,10 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
             throw new RegistrationException("Factom Identity Chain DID creation is not yet implemented.");
         }
 
-        CreateFactomDidRequest createRequest = createFactomDidRequestFrom(registerRequest);
+        CreateFactomDidRequest createFactomDidRequest = createFactomDidRequestFrom(createRequest);
         final ResolvedFactomDIDEntry<FactomDidContent> result;
         try {
-            result = identityClient.create(createRequest, ecAddress);
+            result = identityClient.create(createFactomDidRequest, ecAddress);
         } catch (FactomRuntimeException e) {
             throw new RegistrationException(e.getMessage(), e);
         } catch (Exception e) {
@@ -90,7 +90,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         Map<String, Object> didState = new HashMap<>();
         didState.put(Constants.ResponseKeywords.STATE, Constants.DidState.PENDING);
         didState.put(Constants.ResponseKeywords.IDENTIFIER, constructDidUri(networkId, result.getChainId()));
-        return RegisterState.build(
+        return CreateState.build(
                 jobId,
                 didState,
                 null,
@@ -126,12 +126,12 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         return identityClient;
     }
 
-    private String getNetworkFrom(RegisterRequest registerRequest) {
-        return Optional.of((String) registerRequest.getOptions().get(Constants.RequestOptions.NETWORK_NAME)).orElse(MAINNET_KEY);
+    private String getNetworkFrom(CreateRequest createRequest) {
+        return Optional.of((String) createRequest.getOptions().get(Constants.RequestOptions.NETWORK_NAME)).orElse(MAINNET_KEY);
     }
 
-    private DIDVersion getDidVersionFrom(RegisterRequest registerRequest) {
-        String versionString = (String) registerRequest.getOptions().get(Constants.RequestOptions.DID_VERSION);
+    private DIDVersion getDidVersionFrom(CreateRequest createRequest) {
+        String versionString = (String) createRequest.getOptions().get(Constants.RequestOptions.DID_VERSION);
         if (versionString == null) {
             return DIDVersion.FACTOM_V1_JSON;
         }
@@ -158,7 +158,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         );
     }
 
-    private RegisterState handleJobStatusResponse(String jobId) throws RegistrationException {
+    private CreateState handleJobStatusResponse(String jobId) throws RegistrationException {
         JobMetadata jobMetadata = JobMetadata.from(jobId);
         FactomdClient factomdClient = getFactomdFor(jobMetadata.getNetwork());
         final FactomResponse<EntryTransactionResponse> response;
@@ -170,7 +170,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         Map<String, Object> didState = new HashMap<>();
         didState.put("state", entryStateFromResponse(response));
         didState.put("identifier", constructDidUri(jobMetadata.getNetwork(), jobMetadata.getChainId()));
-        return RegisterState.build(
+        return CreateState.build(
                 jobId,
                 didState,
                 null,
@@ -204,11 +204,11 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         return Networks.factomd(Optional.of(networkId));
     }
 
-    private CreateFactomDidRequest createFactomDidRequestFrom(RegisterRequest registerRequest) {
-        return gson.fromJson(gson.toJsonTree(registerRequest.getOptions()), CreateFactomDidRequest.class);
+    private CreateFactomDidRequest createFactomDidRequestFrom(CreateRequest createRequest) {
+        return gson.fromJson(gson.toJsonTree(createRequest.getOptions()), CreateFactomDidRequest.class);
     }
 
-    private CreateIdentityRequestEntry createIdentityRequestEntryFrom(RegisterRequest registerRequest) {
-        return gson.fromJson(gson.toJsonTree(registerRequest.getOptions()), CreateIdentityRequestEntry.class);
+    private CreateIdentityRequestEntry createIdentityRequestEntryFrom(CreateRequest createRequest) {
+        return gson.fromJson(gson.toJsonTree(createRequest.getOptions()), CreateIdentityRequestEntry.class);
     }
 }

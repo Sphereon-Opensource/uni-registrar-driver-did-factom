@@ -205,7 +205,8 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
     }
 
     private CreateFactomDidRequest createFactomDidRequestFrom(CreateRequest createRequest) {
-        return gson.fromJson(gson.toJsonTree(createRequest.getOptions()), CreateFactomDidRequest.class);
+        CreateFactomDidRequest.Builder createFactomDidRequestBuilder = gson.fromJson(gson.toJsonTree(createRequest.getOptions()), CreateFactomDidRequest.Builder.class);
+        return createFactomDidRequestBuilder.build();
     }
 
     private CreateIdentityRequestEntry createIdentityRequestEntryFrom(CreateRequest createRequest) {

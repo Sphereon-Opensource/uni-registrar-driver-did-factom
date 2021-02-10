@@ -2,12 +2,14 @@ package com.sphereon.uniregistrar.driver.did.factom;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uniregistrar.RegistrationException;
-import uniregistrar.request.RegisterRequest;
-import uniregistrar.state.RegisterState;
+import uniregistrar.request.CreateRequest;
+import uniregistrar.state.CreateState;
 
-@RestController("/1.0")
+@RestController
+@RequestMapping("/1.0")
 public class FactomDriverController {
     private final DidFactomDriver didFactomDriver;
 
@@ -15,8 +17,8 @@ public class FactomDriverController {
         this.didFactomDriver = didFactomDriver;
     }
 
-    @PostMapping("/register")
-    public RegisterState register(@RequestBody RegisterRequest registerRequest) throws RegistrationException {
-        return didFactomDriver.register(registerRequest);
+    @PostMapping("/create")
+    public CreateState register(@RequestBody CreateRequest createRequest) throws RegistrationException {
+        return didFactomDriver.create(createRequest);
     }
 }

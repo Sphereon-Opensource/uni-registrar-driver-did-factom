@@ -3,6 +3,9 @@ package com.sphereon.uniregistrar.driver.did.factom.dto;
 import com.sphereon.factom.identity.did.DIDVersion;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.factomprotocol.identity.did.model.DidKey;
+import org.factomprotocol.identity.did.model.ManagementKey;
+import org.factomprotocol.identity.did.model.Service;
 
 import java.util.List;
 
@@ -16,11 +19,11 @@ public class FactomDidOptions {
     )
     private final DIDVersion didVersion;
     @ApiModelProperty
-    private final List<FactomDidKey> managementKeys;
+    private final List<ManagementKey> managementKeys;
     @ApiModelProperty
-    private final List<FactomDidKey> didKeys;
+    private final List<DidKey> didKeys;
     @ApiModelProperty
-    private final List<FactomDidService> services;
+    private final List<Service> services;
     @ApiModelProperty(
             value = "External ids that form the basis of the chainId.",
             name = "tags",
@@ -40,12 +43,12 @@ public class FactomDidOptions {
     )
     private final String networkName;
 
-    private FactomDidOptions(DIDVersion didVersion, String networkName, List<FactomDidKey> managementKeys, List<FactomDidKey> didKey, List<FactomDidService> service, String nonce, String... tags) {
+    private FactomDidOptions(DIDVersion didVersion, String networkName, List<ManagementKey> managementKeys, List<DidKey> didKeys, List<Service> services, String nonce, String... tags) {
         this.didVersion = didVersion;
         this.networkName = networkName;
         this.managementKeys = managementKeys;
-        this.didKeys = didKey;
-        this.services = service;
+        this.didKeys = didKeys;
+        this.services = services;
         this.nonce = nonce;
         this.tags = tags;
     }
@@ -54,15 +57,15 @@ public class FactomDidOptions {
         return didVersion;
     }
 
-    public List<FactomDidKey> getManagementKeys() {
+    public List<ManagementKey> getManagementKeys() {
         return managementKeys;
     }
 
-    public List<FactomDidKey> getDidKeys() {
+    public List<DidKey> getDidKeys() {
         return didKeys;
     }
 
-    public List<FactomDidService> getServices() {
+    public List<Service> getServices() {
         return services;
     }
 

@@ -7,6 +7,7 @@ import com.sphereon.factom.identity.did.entry.CreateIdentityRequestEntry;
 import com.sphereon.factom.identity.did.entry.ResolvedFactomDIDEntry;
 import com.sphereon.factom.identity.did.request.CreateFactomDidRequest;
 import com.sphereon.uniregistrar.driver.did.factom.model.JobMetadata;
+import lombok.extern.slf4j.Slf4j;
 import org.blockchain_innovation.factom.client.api.FactomResponse;
 import org.blockchain_innovation.factom.client.api.FactomdClient;
 import org.blockchain_innovation.factom.client.api.errors.FactomRuntimeException;
@@ -18,8 +19,7 @@ import org.blockchain_innovation.factom.client.api.ops.EntryOperations;
 import org.blockchain_innovation.factom.client.api.ops.StringUtils;
 import org.blockchain_innovation.factom.client.impl.Networks;
 import org.factomprotocol.identity.did.model.FactomDidContent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uniregistrar.RegistrationException;
 import uniregistrar.driver.AbstractDriver;
@@ -38,24 +38,31 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import static com.sphereon.factom.identity.did.Constants.DID.DID_FACTOM;
 import static com.sphereon.uniregistrar.driver.did.factom.Constants.MAINNET_KEY;
 
 @Component
+@Slf4j
 public class DidFactomDriver extends AbstractDriver implements Driver {
-    private static final Logger log = LoggerFactory.getLogger(DidFactomDriver.class);
     private final EntryOperations entryOperations;
     private final Gson gson;
+    private final ClientFactory clientFactory;
 
-    public DidFactomDriver() {
-        ClientFactory clientFactory = new ClientFactory();
+    @Autowired
+    public DidFactomDriver(final ClientFactory clientFactory) {
+        this.clientFactory = clientFactory;
+        this.entryOperations = new EntryOperations();
+        this.gson = new Gson();
+        initClients();
+    }
+
+    private void initClients() {
         List<IdentityClient> clients = clientFactory.fromEnvironment(getProperties());
         if (clients.isEmpty()) {
             log.warn("No Factom networks defined in environment. Using default mainnet and testnet values using OpenNode");
-            clients = clientFactory.fromDefaults();
+            clientFactory.fromDefaults();
+            // We don't need to keep track of the clients, as the Networks class has a registry we can use
         }
-        clients.forEach(IdentityClient.Registry::put);
-        this.entryOperations = new EntryOperations();
-        this.gson = new Gson();
     }
 
 
@@ -99,12 +106,12 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
 
     @Override
     public UpdateState update(UpdateRequest updateRequest) throws RegistrationException {
-        throw new RuntimeException("Not implemented.");
+        throw new RuntimeException("Not yet implemented for Factom DIDs.");
     }
 
     @Override
     public DeactivateState deactivate(DeactivateRequest deactivateRequest) throws RegistrationException {
-        throw new RuntimeException("Not implemented.");
+        throw new RuntimeException("Not yet implemented for Factom DIDs.");
     }
 
     @Override
@@ -139,13 +146,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
     }
 
     private Optional<Address> getECAddressFor(String networkId) {
-        for (int nr = 1; nr < 10; nr++) {
-            String nrNetworkId = getProperties().get(ClientFactory.Env.NETWORK_ID.key(nr));
-            if (nrNetworkId.equals(networkId)) {
-                return Optional.of(new Address(getProperties().get(ClientFactory.Env.EC_ADDRESS.key(nr))));
-            }
-        }
-        return Optional.empty();
+        return Networks.getDefaultECAddress(Optional.ofNullable(networkId));
     }
 
     private String getEntryHash(ResolvedFactomDIDEntry<FactomDidContent> resolvedEntry) {
@@ -191,10 +192,12 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
     }
 
     private String constructDidUri(String network, String chainId) {
-        if (network == null || MAINNET_KEY.equals(network)) {
-            return String.format("did:factom:%s", chainId);
+        if (chainId.startsWith(DID_FACTOM)) {
+            return chainId;
+        } else if (network == null || MAINNET_KEY.equals(network)) {
+            return String.format(DID_FACTOM + "%s", chainId);
         }
-        return String.format("did:factom:%s:%s", network, chainId);
+        return String.format(DID_FACTOM + "%s:%s", network, chainId);
     }
 
     private FactomdClient getFactomdFor(String networkId) {

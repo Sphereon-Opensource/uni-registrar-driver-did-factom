@@ -17,7 +17,7 @@ public class FactomRegisterRequest {
             value = "options for creating a new DID",
             name = "options"
     )
-    private FactomDidOptions options;
+    private final FactomDidOptions options;
 
     private FactomRegisterRequest(String jobId, FactomDidOptions options) {
         this.jobId = jobId;

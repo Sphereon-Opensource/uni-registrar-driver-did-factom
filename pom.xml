@@ -5,16 +5,22 @@
     <artifactId>uni-registrar-driver-did-factom</artifactId>
     <packaging>${packaging.type}</packaging>
     <name>uni-registrar-driver-did-factom</name>
+    <version>0.2.0-SNAPSHOT</version>
 
     <parent>
         <groupId>decentralized-identity</groupId>
         <artifactId>uni-registrar</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.1.0</version>
     </parent>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <factom-client.version>0.4.0</factom-client.version>
+        <factom-did-models-java-gson.version>0.3.1-SNAPSHOT</factom-did-models-java-gson.version>
+        <factom-identity-client.version>0.4.0-SNAPSHOT</factom-identity-client.version>
+        <spring-core.version>5.3.9</spring-core.version>
+        <spring-boot.version>2.5.3</spring-boot.version>
     </properties>
 
     <dependencyManagement>
@@ -22,15 +28,19 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.3.3.RELEASE</version>
+                <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
-                <artifactId>spring-core</artifactId>
-                <version>5.2.9.RELEASE</version>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>5.3.9</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
+
+
         </dependencies>
     </dependencyManagement>
 
@@ -48,6 +58,14 @@
 
     <repositories>
         <repository>
+            <id>danubtech-maven-snapshots</id>
+            <url>https://repo.danubetech.com/repository/maven-snapshots/</url>
+        </repository>
+        <repository>
+            <id>danubtech-maven-releases</id>
+            <url>https://repo.danubetech.com/repository/maven-releases/</url>
+        </repository>
+        <repository>
             <id>central</id>
             <url>https://repo.maven.apache.org/maven2</url>
         </repository>
@@ -59,7 +77,7 @@
         <repository>
             <id>sphereon-opensource-releases</id>
             <name>Sphereon Opensource Releases</name>
-            <url>http://nexus.qa.sphereon.com/repository/sphereon-opensource-releases/</url>
+            <url>https://nexus.qa.sphereon.com/repository/sphereon-opensource-releases/</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -70,23 +88,13 @@
         <repository>
             <id>sphereon-opensource-snapshots</id>
             <name>Sphereon Opensource Snapshots</name>
-            <url>http://nexus.qa.sphereon.com/repository/sphereon-opensource-snapshots/</url>
+            <url>https://nexus.qa.sphereon.com/repository/sphereon-opensource-snapshots/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
             <releases>
                 <enabled>false</enabled>
             </releases>
-        </repository>
-        <repository>
-            <id>github-universal-resolver</id>
-            <name>GitHub decentralized-identity/universal-resolver</name>
-            <url>https://maven.pkg.github.com/decentralized-identity/universal-resolver</url>
-        </repository>
-        <repository>
-            <id>github-did-common-java</id>
-            <name>GitHub decentralized-identity/did-common-java</name>
-            <url>https://maven.pkg.github.com/decentralized-identity/did-common-java</url>
         </repository>
     </repositories>
 
@@ -99,49 +107,55 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+       <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring-core.version}</version>
+        </dependency>
         <dependency>
             <groupId>decentralized-identity</groupId>
             <artifactId>uni-registrar-driver</artifactId>
+            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.sphereon.public</groupId>
             <artifactId>factom-identity-client</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>${factom-identity-client.version}</version>
         </dependency>
         <dependency>
             <groupId>org.factomprotocol.identity</groupId>
             <artifactId>factom-did-models-java-gson</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
-            <scope>compile</scope>
+            <version>${factom-did-models-java-gson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.blockchain-innovation.factom.client</groupId>
             <artifactId>json-converter-gson</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
-            <scope>compile</scope>
+            <version>${factom-client.version}</version>
         </dependency>
         <dependency>
             <groupId>org.blockchain-innovation.factom.client</groupId>
             <artifactId>factom-client-offline-signing</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
-            <scope>compile</scope>
+            <version>${factom-client.version}</version>
         </dependency>
         <dependency>
             <groupId>org.blockchain-innovation.factom.client</groupId>
             <artifactId>factom-client-impl</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
-            <scope>compile</scope>
+            <version>${factom-client.version}</version>
         </dependency>
         <dependency>
             <groupId>org.blockchain-innovation.factom.client</groupId>
             <artifactId>logger-slf4j</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
-            <scope>compile</scope>
+            <version>${factom-client.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.sphereon.ms</groupId>
-            <artifactId>commons-response</artifactId>
-            <version>1.0.4-SNAPSHOT</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.20</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -150,7 +164,7 @@
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
+            <artifactId>springfox-oas</artifactId>
             <version>3.0.0</version>
         </dependency>
         <dependency>
@@ -174,6 +188,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.sphereon.uniregistrar.driver.did.factom.FactomDriverApplication</mainClass>
                 </configuration>

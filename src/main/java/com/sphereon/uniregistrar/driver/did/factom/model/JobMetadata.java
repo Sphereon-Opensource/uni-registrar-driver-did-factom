@@ -35,7 +35,7 @@ public class JobMetadata {
             throw new RuntimeException("Invalid job id: " + jobId);
         }
         String[] parts = jobId.split(Pattern.quote("."));
-        if (parts.length < 3) {
+        if (parts.length != 3) {
             throw new RuntimeException("Invalid job id: " + jobId);
         }
         return new JobMetadata(parts[0], parts[1], parts[2]);

@@ -1,6 +1,6 @@
 package com.sphereon.uniregistrar.driver.did.factom;
 
-import com.sphereon.ms.rest.response.error.ErrorResponse;
+import com.sphereon.uniregistrar.driver.did.factom.dto.error.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -20,5 +20,13 @@ public class FactomDriverControllerAdvice {
     ErrorResponse registrationException(RegistrationException registrationException) {
         log.warn(registrationException.getMessage());
         return new ErrorResponse(registrationException);
+    }
+
+    @ResponseBody
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    ErrorResponse fallbackException(Exception exception) {
+        log.error(exception.getMessage(), exception);
+        return new ErrorResponse(exception);
     }
 }

@@ -6,12 +6,13 @@
 package com.sphereon.uniregistrar.driver.did.factom.dto.error;
 
 import io.swagger.annotations.ApiModel;
+
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 
 @XmlEnum
 @ApiModel(
-    description = "error level"
+        description = "error level"
 )
 public enum Level {
     @XmlEnumValue("INFO")

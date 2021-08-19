@@ -4,23 +4,24 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 @ApiModel(
-    description = "The error response"
+        description = "The error response"
 )
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ErrorResponse {
     @XmlElement(
-        name = "errors"
+            name = "errors"
     )
     @JsonProperty("errors")
     @ApiModelProperty
@@ -80,7 +81,7 @@ public class ErrorResponse {
             Error[] var3 = additionalErrors;
             int var4 = additionalErrors.length;
 
-            for(int var5 = 0; var5 < var4; ++var5) {
+            for (int var5 = 0; var5 < var4; ++var5) {
                 Error additionalError = var3[var5];
                 this.add(additionalError);
             }
@@ -102,8 +103,8 @@ public class ErrorResponse {
         List<Error> filtered = new ArrayList();
         Iterator var4 = this.getErrors().iterator();
 
-        while(var4.hasNext()) {
-            Error error = (Error)var4.next();
+        while (var4.hasNext()) {
+            Error error = (Error) var4.next();
             if (error.is(level, checkCauses)) {
                 filtered.add(error);
             }
@@ -128,7 +129,7 @@ public class ErrorResponse {
         } else if (!(o instanceof ErrorResponse)) {
             return false;
         } else {
-            ErrorResponse that = (ErrorResponse)o;
+            ErrorResponse that = (ErrorResponse) o;
             return this.errors != null ? this.errors.equals(that.errors) : that.errors == null;
         }
     }

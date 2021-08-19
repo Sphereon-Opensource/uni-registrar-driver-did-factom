@@ -14,6 +14,17 @@ public class JobMetadata {
         this.entryHash = entryHash;
     }
 
+    public static JobMetadata from(String jobId) {
+        if (!jobId.contains(".")) {
+            throw new RuntimeException("Invalid job id: " + jobId);
+        }
+        String[] parts = jobId.split(Pattern.quote("."));
+        if (parts.length != 3) {
+            throw new RuntimeException("Invalid job id: " + jobId);
+        }
+        return new JobMetadata(parts[0], parts[1], parts[2]);
+    }
+
     public String getNetwork() {
         return network;
     }
@@ -28,16 +39,5 @@ public class JobMetadata {
 
     public String getId() {
         return String.format("%s.%s.%s", network, chainId, entryHash);
-    }
-
-    public static JobMetadata from(String jobId) {
-        if (!jobId.contains(".")) {
-            throw new RuntimeException("Invalid job id: " + jobId);
-        }
-        String[] parts = jobId.split(Pattern.quote("."));
-        if (parts.length != 3) {
-            throw new RuntimeException("Invalid job id: " + jobId);
-        }
-        return new JobMetadata(parts[0], parts[1], parts[2]);
     }
 }

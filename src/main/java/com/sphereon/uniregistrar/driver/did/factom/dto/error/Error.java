@@ -1,63 +1,64 @@
 package com.sphereon.uniregistrar.driver.did.factom.dto.error;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator.Mode;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @ApiModel(
-    description = "An error"
+        description = "An error"
 )
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Error {
     @ApiModelProperty(
-        required = true,
-        allowableValues = "INFO,WARNING,FATAL"
+            required = true,
+            allowableValues = "INFO,WARNING,FATAL"
     )
     @XmlElement(
-        name = "level",
-        required = true
+            name = "level",
+            required = true
     )
     @JsonProperty(
-        value = "level",
-        required = true
+            value = "level",
+            required = true
     )
     private Level level;
     @XmlElement(
-        name = "code",
-        required = true
+            name = "code",
+            required = true
     )
     @JsonProperty(
-        value = "code",
-        required = true
+            value = "code",
+            required = true
     )
     private String code;
     @XmlElement(
-        name = "message",
-        required = true
+            name = "message",
+            required = true
     )
     @JsonProperty(
-        value = "message",
-        required = true
+            value = "message",
+            required = true
     )
     private String message;
     @ApiModelProperty(
-        reference = "Error"
+            reference = "Error"
     )
     @XmlElement(
-        name = "cause"
+            name = "cause"
     )
     @JsonProperty("cause")
     private Error cause;
 
     @JsonCreator(
-        mode = Mode.PROPERTIES
+            mode = Mode.PROPERTIES
     )
     public Error(@JsonProperty("level") Level level, @JsonProperty("code") String code, @JsonProperty("message") String message, @JsonProperty("cause") Error cause) {
         this.level = Level.FATAL;
@@ -87,7 +88,7 @@ public class Error {
             error = new Error("exception", "Nullpointer during error creation from throwable!");
         }
 
-        for(; current != null; current = current.getCause()) {
+        for (; current != null; current = current.getCause()) {
             if (error == null) {
                 error = new Error(Level.FATAL, "exception", current.getMessage());
             } else {
@@ -152,11 +153,12 @@ public class Error {
         } else if (!(o instanceof Error)) {
             return false;
         } else {
-            Error error = (Error)o;
+            Error error = (Error) o;
             if (this.getLevel() != error.getLevel()) {
                 return false;
             } else {
-                label35: {
+                label35:
+                {
                     if (this.getCode() != null) {
                         if (this.getCode().equals(error.getCode())) {
                             break label35;

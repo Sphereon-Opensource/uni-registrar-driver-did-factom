@@ -21,18 +21,6 @@ import java.util.Properties;
 public class ClientFactory {
     private final static AddressKeyConversions ADDRESS_CONV = new AddressKeyConversions();
 
-    public enum Env {
-        ENABLED, FACTOMD_URL, WALLETD_URL, NETWORK_ID, MODE, EC_ADDRESS;
-
-        public String key(int id) {
-            if (id < 1 || id > 9) {
-                throw new RuntimeException("Invalid value for id specified " + id + " for creating environment key " + name());
-            }
-            return String.format("NODE%d_%s", id, name());
-        }
-    }
-
-
     public List<IdentityClient> fromEnvironment(Properties properties) {
         return fromEnvironment(toMap(properties));
     }
@@ -80,7 +68,6 @@ public class ClientFactory {
         return fromEnvironment(toMap(properties), nr);
     }
 
-
     public Optional<IdentityClient> fromEnvironment(Map<String, String> environment, int nr) {
         String enabled = Optional.ofNullable(environment.get(Env.ENABLED.key(nr))).orElse("false");
         if (!Boolean.parseBoolean(enabled)) {
@@ -126,5 +113,16 @@ public class ClientFactory {
 
     private String constructPropertyKey(String networkId, RpcSettings.SubSystem subsystem, String key) {
         return String.format("%s.%s.%s", networkId, subsystem.configKey(), key);
+    }
+
+    public enum Env {
+        ENABLED, FACTOMD_URL, WALLETD_URL, NETWORK_ID, MODE, EC_ADDRESS;
+
+        public String key(int id) {
+            if (id < 1 || id > 9) {
+                throw new RuntimeException("Invalid value for id specified " + id + " for creating environment key " + name());
+            }
+            return String.format("NODE%d_%s", id, name());
+        }
     }
 }

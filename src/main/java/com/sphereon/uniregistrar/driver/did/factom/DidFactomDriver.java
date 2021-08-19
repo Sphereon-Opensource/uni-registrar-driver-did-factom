@@ -178,7 +178,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         final var factomdClient = getFactomdFor(jobMetadata.getNetwork());
         final FactomResponse<EntryTransactionResponse> response;
         try {
-            response = factomdClient.ackTransactions(jobMetadata.getEntryHash(),jobMetadata.getChainId(), EntryTransactionResponse.class).get();
+            response = factomdClient.ackTransactions(jobMetadata.getEntryHash(), jobMetadata.getChainId(), EntryTransactionResponse.class).get();
         } catch (ExecutionException | InterruptedException e) {
             log.warn("Error retrieving job status for job with id '{}': {}", jobId, e.getMessage());
             throw new RegistrationException("Could not check job status for jobId: " + jobId, e);

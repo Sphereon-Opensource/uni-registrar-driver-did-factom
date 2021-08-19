@@ -43,6 +43,13 @@ public class FactomDidOptions {
     )
     private final String networkName;
 
+    @ApiModelProperty(
+            value = "The Factom EC address to use to pay for the entry. Must either be a private address, or an address that has been registered before",
+            name = "ecAddress",
+            example = "testnet"
+    )
+    private String ecAddress;
+
     private FactomDidOptions(DIDVersion didVersion, String networkName, List<ManagementKey> managementKeys, List<DidKey> didKeys, List<Service> services, String nonce, String... tags) {
         this.didVersion = didVersion;
         this.networkName = networkName;

@@ -1,7 +1,14 @@
-![Factom Protocol Logo](https://assets.website-files.com/5bca6108bae718b9ad49a5f9/5c4820477febe49184787777_Factom-Protocol_Logo-p-500.png)
+<h1 align="center">
+  <br>
+  <a href="https://www.sphereon.com"><img src="https://sphereon.com/content/themes/sphereon/assets/img/logo.svg" alt="Sphereon" width="400"></a>
+  <br>
+Universal Registrar Driver: Factom
+  <br>
+</h1>
 
-# Universal Registrar Driver: Factom
 
+
+# About
 This is a Java [Universal Registrar](https://github.com/decentralized-identity/universal-registrar/) driver for **did:factom** identifiers 
 
 ## Specifications

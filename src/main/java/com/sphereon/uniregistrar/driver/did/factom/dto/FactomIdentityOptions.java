@@ -29,6 +29,13 @@ public class FactomIdentityOptions extends CreateIdentityRequest {
     )
     private final String networkName;
 
+    @ApiModelProperty(
+            value = "The Factom EC address to use to pay for the entry. Must either be a private address, or an address that has been registered before",
+            name = "ecAddress",
+            example = "testnet"
+    )
+    private String ecAddress;
+
     public FactomIdentityOptions(DIDVersion didVersion, String networkName, List<FactomKey> keys, String... tags) {
         super();
         assertValid(didVersion, keys, tags);

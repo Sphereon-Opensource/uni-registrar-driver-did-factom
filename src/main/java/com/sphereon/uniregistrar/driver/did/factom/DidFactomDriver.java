@@ -3,10 +3,16 @@ package com.sphereon.uniregistrar.driver.did.factom;
 import com.google.gson.Gson;
 import com.sphereon.factom.identity.did.DIDVersion;
 import com.sphereon.factom.identity.did.IdentityClient;
+import com.sphereon.factom.identity.did.entry.FactomIdentityEntry;
 import com.sphereon.factom.identity.did.entry.ResolvedFactomDIDEntry;
+import com.sphereon.factom.identity.did.parse.RuleException;
 import com.sphereon.factom.identity.did.request.CreateFactomDidRequest;
 import com.sphereon.factom.identity.did.request.CreateFactomIdentityRequest;
+import com.sphereon.factom.identity.did.response.BlockchainResponse;
 import com.sphereon.uniregistrar.driver.did.factom.model.JobMetadata;
+import foundation.identity.did.DIDDocument;
+import foundation.identity.did.DIDURL;
+import foundation.identity.did.parser.ParserException;
 import lombok.extern.slf4j.Slf4j;
 import org.blockchain_innovation.factom.client.api.FactomResponse;
 import org.blockchain_innovation.factom.client.api.FactomdClient;
@@ -17,7 +23,9 @@ import org.blockchain_innovation.factom.client.api.model.response.factomd.EntryT
 import org.blockchain_innovation.factom.client.api.ops.Encoding;
 import org.blockchain_innovation.factom.client.api.ops.EntryOperations;
 import org.blockchain_innovation.factom.client.api.ops.StringUtils;
+import org.blockchain_innovation.factom.client.impl.AbstractClient;
 import org.blockchain_innovation.factom.client.impl.Networks;
+import org.factomprotocol.identity.did.invoker.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uniregistrar.RegistrationException;
@@ -30,6 +38,8 @@ import uniregistrar.state.CreateState;
 import uniregistrar.state.DeactivateState;
 import uniregistrar.state.UpdateState;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,16 +89,28 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         return createState(networkId, result);
     }
 
-    private CreateState createState(String networkId, ResolvedFactomDIDEntry<?> result) {
+    private CreateState createState(String networkId, ResolvedFactomDIDEntry<?> result) throws RegistrationException {
+        final var start = Instant.now();
         final var jobId = new JobMetadata(networkId, result.getChainId(), getEntryHash(result)).getId();
         final var didState = new HashMap<String, Object>();
+        final var identifier = constructDidUri(networkId, result.getChainId());
+        final List<FactomIdentityEntry<?>> allEntries = List.of(result);
         didState.put(Constants.ResponseKeywords.STATE, Constants.DidState.PENDING);
-        didState.put(Constants.ResponseKeywords.IDENTIFIER, constructDidUri(networkId, result.getChainId()));
-        return CreateState.build(
-                jobId,
-                didState,
-                null,
-                null);
+        didState.put(Constants.ResponseKeywords.IDENTIFIER, identifier);
+
+        BlockchainResponse<?> blockchainResponse = null;
+        try {
+            blockchainResponse = getClient(networkId).factory().toBlockchainResponse(identifier, allEntries);
+            DIDDocument didDocument = getClient(networkId).factory().toDid(identifier, blockchainResponse);
+            return CreateState.build(
+                    jobId,
+                    didState,
+                    createMethodMetadata(networkId, new JSON().serialize(blockchainResponse)),
+                    createRegistrarMetadata(identifier, start));
+        } catch (RuleException e) {
+            throw new RegistrationException(e);
+        }
+
     }
 
     private ResolvedFactomDIDEntry<?> getResolvedFactomDIDEntry(String networkId, CreateRequest createRequest) throws RegistrationException {
@@ -174,6 +196,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
 
     private CreateState handleJobStatusResponse(String jobId) throws RegistrationException {
         log.info("Retrieving job status for job with id '{}'....", jobId);
+        final var start = Instant.now();
         final var jobMetadata = JobMetadata.from(jobId);
         final var factomdClient = getFactomdFor(jobMetadata.getNetwork());
         final FactomResponse<EntryTransactionResponse> response;
@@ -185,14 +208,15 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         }
         final var didState = new HashMap<String, Object>();
         final var state = entryStateFromResponse(response);
+        final var identifier = constructDidUri(jobMetadata.getNetwork(), jobMetadata.getChainId());
         didState.put("state", state);
-        didState.put("identifier", constructDidUri(jobMetadata.getNetwork(), jobMetadata.getChainId()));
+        didState.put("identifier", identifier);
         log.info("Job status for job with id '{}': {}", jobId, state);
         return CreateState.build(
                 jobId,
                 didState,
-                null,
-                null);
+                createRegistrarMetadata(identifier, start),
+                createMethodMetadata(jobMetadata.getNetwork(), new JSON().serialize(response.getResult())));
     }
 
     private String entryStateFromResponse(FactomResponse<EntryTransactionResponse> response) {
@@ -232,5 +256,30 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         return gson.fromJson(gson.toJsonTree(createRequest.getOptions()), CreateFactomIdentityRequest.Builder.class).build();
     }
 
+
+    private Map<String, Object> createMethodMetadata(String networkId, String blockchainResponse) {
+        Map<String, Object> methodMetadata = new HashMap<>();
+
+        methodMetadata.put("network", networkId);
+        methodMetadata.put("factomdNode", ((AbstractClient) getClient(networkId).lowLevelClient().getEntryApi().getFactomdClient()).getSettings().getServer().getURL());
+        methodMetadata.put("nodeResponse", blockchainResponse);
+        return methodMetadata;
+    }
+
+    private Map<String, Object> createRegistrarMetadata(String identifier, Instant start) {
+        Map<String, Object> resolverMetadata = new HashMap<>();
+        resolverMetadata.put("startTime", start.toString());
+        resolverMetadata.put("duration", Duration.between(start, Instant.now()).toMillis());
+        resolverMetadata.put("method", "factom");
+        try {
+            resolverMetadata.put("didUrl", DIDURL.fromString(identifier).toJsonObject());
+        } catch (ParserException e) {
+            log.warn("Could not construct didURL for: " + identifier + ", message: " + e.getMessage());
+        }
+        resolverMetadata.put("driverId", "sphereon/uni-registrar-driver-did-factom");
+        resolverMetadata.put("vendor", "Factom Protocol");
+        resolverMetadata.put("version", "0.4.1");
+        return resolverMetadata;
+    }
 
 }

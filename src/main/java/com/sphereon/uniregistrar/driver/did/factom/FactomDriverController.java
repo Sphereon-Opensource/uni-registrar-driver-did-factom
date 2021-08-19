@@ -1,6 +1,5 @@
 package com.sphereon.uniregistrar.driver.did.factom;
 
-import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,4 +23,5 @@ public class FactomDriverController {
     public CreateState create(@RequestBody CreateRequest createRequest) throws RegistrationException {
         return didFactomDriver.create(createRequest);
     }
+
 }

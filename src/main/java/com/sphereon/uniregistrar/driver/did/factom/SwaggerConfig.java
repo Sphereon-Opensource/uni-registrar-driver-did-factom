@@ -1,6 +1,6 @@
 package com.sphereon.uniregistrar.driver.did.factom;
 
-import com.sphereon.uniregistrar.driver.did.factom.dto.FactomRegisterRequest;
+import com.sphereon.uniregistrar.driver.did.factom.dto.FactomRegisterDidRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.PathSelectors;
@@ -29,7 +29,7 @@ public class SwaggerConfig {
                 .paths(PathSelectors.any())
                 .build()
                 .tags(new Tag("Registrar", "Factom Registrar"))
-                .directModelSubstitute(CreateRequest.class, FactomRegisterRequest.class)
+                .directModelSubstitute(CreateRequest.class, FactomRegisterDidRequest.class)
                 .forCodeGeneration(true)
                 .pathMapping("/");
     }

@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel
-public class FactomRegisterRequest {
+public class FactomRegisterIdentityRequest {
     @ApiModelProperty(
             value = "jobId corresponding to previously created register requests.",
             name = "jobId",
@@ -14,12 +14,12 @@ public class FactomRegisterRequest {
     private String jobId;
 
     @ApiModelProperty(
-            value = "options for creating a new DID",
+            value = "options for creating a new identity",
             name = "options"
     )
-    private final FactomDidOptions options;
+    private final FactomIdentityOptions options;
 
-    private FactomRegisterRequest(String jobId, FactomDidOptions options) {
+    public FactomRegisterIdentityRequest(String jobId, FactomIdentityOptions options) {
         this.jobId = jobId;
         this.options = options;
     }
@@ -32,7 +32,7 @@ public class FactomRegisterRequest {
         this.jobId = jobId;
     }
 
-    public FactomDidOptions getOptions() {
+    public FactomIdentityOptions getOptions() {
         return options;
     }
 }

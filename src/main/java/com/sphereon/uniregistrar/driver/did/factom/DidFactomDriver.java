@@ -3,9 +3,9 @@ package com.sphereon.uniregistrar.driver.did.factom;
 import com.google.gson.Gson;
 import com.sphereon.factom.identity.did.DIDVersion;
 import com.sphereon.factom.identity.did.IdentityClient;
-import com.sphereon.factom.identity.did.entry.CreateIdentityRequestEntry;
 import com.sphereon.factom.identity.did.entry.ResolvedFactomDIDEntry;
 import com.sphereon.factom.identity.did.request.CreateFactomDidRequest;
+import com.sphereon.factom.identity.did.request.CreateFactomIdentityRequest;
 import com.sphereon.uniregistrar.driver.did.factom.model.JobMetadata;
 import lombok.extern.slf4j.Slf4j;
 import org.blockchain_innovation.factom.client.api.FactomResponse;
@@ -18,7 +18,6 @@ import org.blockchain_innovation.factom.client.api.ops.Encoding;
 import org.blockchain_innovation.factom.client.api.ops.EntryOperations;
 import org.blockchain_innovation.factom.client.api.ops.StringUtils;
 import org.blockchain_innovation.factom.client.impl.Networks;
-import org.factomprotocol.identity.did.model.FactomDidContent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uniregistrar.RegistrationException;
@@ -40,6 +39,7 @@ import java.util.stream.Collectors;
 
 import static com.sphereon.factom.identity.did.Constants.DID.DID_FACTOM;
 import static com.sphereon.uniregistrar.driver.did.factom.Constants.MAINNET_KEY;
+import static com.sphereon.uniregistrar.driver.did.factom.Constants.RequestOptions.NETWORK_NAME;
 
 @Component
 @Slf4j
@@ -65,36 +65,23 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         }
     }
 
-
     @Override
     public CreateState create(CreateRequest createRequest) throws RegistrationException {
         if (StringUtils.isNotEmpty(createRequest.getJobId())) {
+            if (createRequest.getOptions() != null && createRequest.getOptions().size() > 0) {
+                throw new RegistrationException("Do not supply any options when passing in a job id. It is used to lookup existing registrations only!");
+            }
             return handleJobStatusResponse(createRequest.getJobId());
         }
 
-        String networkId = getNetworkFrom(createRequest);
-        IdentityClient identityClient = getClient(networkId);
-        DIDVersion didVersion = getDidVersionFrom(createRequest);
-        Address ecAddress = getECAddressFor(networkId).orElseThrow(() ->
-                new RegistrationException("No EC address available for network id: " + networkId));
+        final var networkId = getNetworkFrom(createRequest.getOptions().get(NETWORK_NAME));
+        final var result = getResolvedFactomDIDEntry(networkId, createRequest);
+        return createState(networkId, result);
+    }
 
-        if (DIDVersion.FACTOM_IDENTITY_CHAIN.equals(didVersion)) {
-            // ToDo: finish create(CreateIdentityRequestEntry entry, Optional<Address> ecAddress) method
-            // in IdentityClient for backwards compatibility with Factom Identity Chains
-            throw new RegistrationException("Factom Identity Chain DID creation is not yet implemented.");
-        }
-
-        CreateFactomDidRequest createFactomDidRequest = createFactomDidRequestFrom(createRequest);
-        final ResolvedFactomDIDEntry<FactomDidContent> result;
-        try {
-            result = identityClient.create(createFactomDidRequest, ecAddress);
-        } catch (FactomRuntimeException e) {
-            throw new RegistrationException(e.getMessage(), e);
-        } catch (Exception e) {
-            throw new RegistrationException("Could not create new DID", e);
-        }
-        String jobId = new JobMetadata(networkId, result.getChainId(), getEntryHash(result)).getId();
-        Map<String, Object> didState = new HashMap<>();
+    private CreateState createState(String networkId, ResolvedFactomDIDEntry<?> result) {
+        final var jobId = new JobMetadata(networkId, result.getChainId(), getEntryHash(result)).getId();
+        final var didState = new HashMap<String, Object>();
         didState.put(Constants.ResponseKeywords.STATE, Constants.DidState.PENDING);
         didState.put(Constants.ResponseKeywords.IDENTIFIER, constructDidUri(networkId, result.getChainId()));
         return CreateState.build(
@@ -102,6 +89,32 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
                 didState,
                 null,
                 null);
+    }
+
+    private ResolvedFactomDIDEntry<?> getResolvedFactomDIDEntry(String networkId, CreateRequest createRequest) throws RegistrationException {
+        final var identityClient = getClient(networkId);
+        final var didVersion = getDidVersionFrom(createRequest);
+        final var ecAddress = getECAddressFor(networkId).orElseThrow(() ->
+                new RegistrationException("No EC address available for network id: " + networkId));
+
+        final ResolvedFactomDIDEntry<?> result;
+        log.info("Creating DID on network '{}', version '{}'...", networkId, didVersion);
+        try {
+            if (DIDVersion.FACTOM_IDENTITY_CHAIN.equals(didVersion)) {
+                result = identityClient.create(createIdentityRequestEntryFrom(createRequest).toCreateIdentityRequestEntry(), Optional.of(ecAddress));
+            } else if (DIDVersion.FACTOM_V1_JSON == didVersion) {
+                result = identityClient.create(createFactomDidRequestFrom(createRequest), Optional.of(ecAddress));
+            } else {
+                throw new RegistrationException("Cannot create DID/identity when no version is supplied");
+            }
+            log.info("Created DID on network '{}', version '{}', chain: '{}'", networkId, didVersion, result.getChainId());
+
+        } catch (FactomRuntimeException e) {
+            throw new RegistrationException(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new RegistrationException("Could not create new DID", e);
+        }
+        return result;
     }
 
     @Override
@@ -133,8 +146,8 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         return identityClient;
     }
 
-    private String getNetworkFrom(CreateRequest createRequest) {
-        return Optional.of((String) createRequest.getOptions().get(Constants.RequestOptions.NETWORK_NAME)).orElse(MAINNET_KEY);
+    private String getNetworkFrom(Object networkName) {
+        return Optional.ofNullable((String) networkName).orElse(MAINNET_KEY);
     }
 
     private DIDVersion getDidVersionFrom(CreateRequest createRequest) {
@@ -149,7 +162,7 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
         return Networks.getDefaultECAddress(Optional.ofNullable(networkId));
     }
 
-    private String getEntryHash(ResolvedFactomDIDEntry<FactomDidContent> resolvedEntry) {
+    private String getEntryHash(ResolvedFactomDIDEntry<?> resolvedEntry) {
         Entry didEntry = resolvedEntry.toEntry(Optional.of(resolvedEntry.getChainId()));
         return Encoding.HEX.encode(
                 entryOperations.calculateEntryHash(
@@ -160,17 +173,21 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
     }
 
     private CreateState handleJobStatusResponse(String jobId) throws RegistrationException {
-        JobMetadata jobMetadata = JobMetadata.from(jobId);
-        FactomdClient factomdClient = getFactomdFor(jobMetadata.getNetwork());
+        log.info("Retrieving job status for job with id '{}'....", jobId);
+        final var jobMetadata = JobMetadata.from(jobId);
+        final var factomdClient = getFactomdFor(jobMetadata.getNetwork());
         final FactomResponse<EntryTransactionResponse> response;
         try {
-            response = factomdClient.ackEntryTransactions(jobMetadata.getEntryHash()).get();
+            response = factomdClient.ackTransactions(jobMetadata.getEntryHash(),jobMetadata.getChainId(), EntryTransactionResponse.class).get();
         } catch (ExecutionException | InterruptedException e) {
+            log.warn("Error retrieving job status for job with id '{}': {}", jobId, e.getMessage());
             throw new RegistrationException("Could not check job status for jobId: " + jobId, e);
         }
-        Map<String, Object> didState = new HashMap<>();
-        didState.put("state", entryStateFromResponse(response));
+        final var didState = new HashMap<String, Object>();
+        final var state = entryStateFromResponse(response);
+        didState.put("state", state);
         didState.put("identifier", constructDidUri(jobMetadata.getNetwork(), jobMetadata.getChainId()));
+        log.info("Job status for job with id '{}': {}", jobId, state);
         return CreateState.build(
                 jobId,
                 didState,
@@ -208,11 +225,12 @@ public class DidFactomDriver extends AbstractDriver implements Driver {
     }
 
     private CreateFactomDidRequest createFactomDidRequestFrom(CreateRequest createRequest) {
-        CreateFactomDidRequest.Builder createFactomDidRequestBuilder = gson.fromJson(gson.toJsonTree(createRequest.getOptions()), CreateFactomDidRequest.Builder.class);
-        return createFactomDidRequestBuilder.build();
+        return gson.fromJson(gson.toJsonTree(createRequest.getOptions()), CreateFactomDidRequest.Builder.class).build();
     }
 
-    private CreateIdentityRequestEntry createIdentityRequestEntryFrom(CreateRequest createRequest) {
-        return gson.fromJson(gson.toJsonTree(createRequest.getOptions()), CreateIdentityRequestEntry.class);
+    private CreateFactomIdentityRequest createIdentityRequestEntryFrom(CreateRequest createRequest) {
+        return gson.fromJson(gson.toJsonTree(createRequest.getOptions()), CreateFactomIdentityRequest.Builder.class).build();
     }
+
+
 }

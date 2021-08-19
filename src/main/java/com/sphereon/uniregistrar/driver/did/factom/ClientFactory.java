@@ -3,6 +3,7 @@ package com.sphereon.uniregistrar.driver.did.factom;
 
 import com.sphereon.factom.identity.did.IdentityClient;
 import lombok.extern.slf4j.Slf4j;
+import org.blockchain_innovation.factom.client.api.AddressKeyConversions;
 import org.blockchain_innovation.factom.client.api.SigningMode;
 import org.blockchain_innovation.factom.client.api.ops.StringUtils;
 import org.blockchain_innovation.factom.client.api.settings.RpcSettings;
@@ -18,6 +19,8 @@ import java.util.Properties;
 @Component
 @Slf4j
 public class ClientFactory {
+    private final static AddressKeyConversions ADDRESS_CONV = new AddressKeyConversions();
+
     public enum Env {
         ENABLED, FACTOMD_URL, WALLETD_URL, NETWORK_ID, MODE, EC_ADDRESS;
 
@@ -59,7 +62,7 @@ public class ClientFactory {
                 .property(constructPropertyKey(Constants.MAINNET_KEY, RpcSettings.SubSystem.WALLETD, Constants.EC_ADDRESS_KEY), Constants.DEFAULT_EC_ADDRESS_MAINNET)
                 .autoRegister(true)
                 .build());
-        log.info("Configured default mainnet client using '{}', signing-mode '{}' and EC-address '{}'", Constants.FACTOMD_URL_MAINNET, SigningMode.OFFLINE, Constants.DEFAULT_EC_ADDRESS_MAINNET);
+        log.info("Configured default mainnet client using '{}', signing-mode '{}' and public EC-address '{}'", Constants.FACTOMD_URL_MAINNET, SigningMode.OFFLINE, ADDRESS_CONV.addressToPublicAddress(Constants.DEFAULT_EC_ADDRESS_MAINNET));
 
         clients.add(new IdentityClient.Builder().networkName(Constants.TESTNET_KEY)
                 .property(constructPropertyKey(Constants.TESTNET_KEY, RpcSettings.SubSystem.FACTOMD, Constants.URL_KEY),
@@ -69,7 +72,7 @@ public class ClientFactory {
                 .property(constructPropertyKey(Constants.TESTNET_KEY, RpcSettings.SubSystem.WALLETD, Constants.EC_ADDRESS_KEY), Constants.DEFAULT_EC_ADDRESS_TESTNET)
                 .autoRegister(true)
                 .build());
-        log.info("Configured default testnet client using '{}', signing-mode '{}' and EC-address '{}'", Constants.FACTOMD_URL_TESTNET, SigningMode.OFFLINE, Constants.DEFAULT_EC_ADDRESS_TESTNET);
+        log.info("Configured default testnet client using '{}', signing-mode '{}' and public EC-address '{}'", Constants.FACTOMD_URL_TESTNET, SigningMode.OFFLINE, ADDRESS_CONV.addressToPublicAddress(Constants.DEFAULT_EC_ADDRESS_TESTNET));
         return clients;
     }
 

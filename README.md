@@ -41,12 +41,22 @@ curl -X POST http://localhost:9080/1.0/create -H "Content-Type: application/json
     ],
     "didKeys": [
       {
-        "type": "Ed25519VerificationKey2018",
+        "type": "Ed25519VerificationKey2020",
         "keyIdentifier": "public-0",
-        "publicKeyBase58": "AAVAjZpfMv6gmMNam3uVAjZpfkcJCwDwnZn6MNam3uVA",
+        "publicKeyMultibase": "z3uVAjZpfMv6gmMNam3uVAjZpfkcJCwDwnZn6MNam3uVA",
         "priorityRequirement": 1,
         "purpose": [
-          "publicKey"
+          "verificationMethod",
+          "authentication"
+        ]
+      },
+      { 
+        "type": "EcdsaSecp256k1VerificationKey2019",
+        "keyIdentifier": "public-1",
+        "publicKeyBase58": "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV",
+        "priorityRequirement": 2,
+        "purpose": [
+          "assertionMethod"
         ]
       }
     ],
@@ -55,7 +65,7 @@ curl -X POST http://localhost:9080/1.0/create -H "Content-Type: application/json
       "more-info",
       "id-example"
     ],
-    "nonce": "a8256aef-cf53-41a3-9343-25c0765e5187",
+    "nonce": "a8256aef-cf53-41a3-9343-25c2765e1187",
     "networkName": "testnet"
   }
 }'

@@ -1,14 +1,17 @@
 # Dockerfile for universalregistrar/driver-did-factom
 
 FROM adoptopenjdk/openjdk11:jre
-MAINTAINER Sphereon Dev <dev@sphereon.com>
+MAINTAINER Sphereon <dev@sphereon.com>
+
+# Default mainnet node using Factom OpenNode
+ENV NODE1_ENABLED true
+ENV NODE1_NETWORK_ID mainnet
+ENV NODE1_FACTOMD_URL https://api.factomd.net/v2
 
 # Default testnet node using Factom OpenNode
-#ENV NODE1_ENABLED true
-#ENV NODE1_NETWORK_ID testnet
-#ENV NODE1_FACTOMD_URL https://dev.factomd.net/v2
-#ENV NODE1_EC_ADDRESS <entry-credit-public-or-secret-address>
-
+ENV NODE2_ENABLED true
+ENV NODE2_NETWORK_ID testnet
+ENV NODE2_FACTOMD_URL https://dev.factomd.net/v2
 #
 # Additional nodes can be passed in using environment variables
 
